@@ -1,0 +1,45 @@
+{
+  "Actions": [
+    {
+      "UUID": "com.bey.homeassistant.toggle",
+      "Icon": "images/action",
+      "Name": "HA Toggle",
+      "States": [
+        {
+          "Image": "images/action",
+          "TitleAlignment": "bottom",
+          "FontSize": "10"
+        }
+      ],
+      "Controllers": [
+        "Keypad"
+      ],
+      "UserTitleEnabled": false,
+      "SupportedInMultiActions": false,
+      "Tooltip": "Home Assistant toggle",
+      "Settings": {
+        "key": ""
+      },
+      "PropertyInspectorPath": "plugin/pi.html"
+    }
+  ],
+  "SDKVersion": 1,
+  "Author": "bey.jp",
+  "Name": "Home Assistant",
+  "Icon": "images/cate",
+  "CodePath": "plugin/index.html",
+  "Description": "Home Assistant の状態表示付きトグル",
+  "Category": "Home Assistant",
+  "CategoryIcon": "images/cate",
+  "Version": "1.1.0",
+  "URL": "https://bey.jp/",
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "7"
+    }
+  ],
+  "Software": {
+    "MinimumVersion": "2.9"
+  }
+}

@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <!-- Property Inspector（キーを選んだときに Stream Dock の画面下に出る設定欄）。2026-11-25 追加。
+       buttons.js の一覧から「このキーをどのボタンにするか」を選ぶ。選ぶと Settings.key に保存される。 -->
+  <style>
+    body { margin: 0; padding: 8px 10px; background: #2d2d2d; color: #d8d8d8;
+           font: 13px "Yu Gothic UI", "Meiryo", sans-serif; }
+    label { display: block; margin-bottom: 4px; color: #9a9a9a; }
+    select { width: 100%; padding: 4px; background: #3d3d3d; color: #eee; border: 1px solid #555; border-radius: 3px;
+             font: inherit; }
+    #info { margin-top: 8px; color: #9a9a9a; font-size: 12px; line-height: 1.5; word-break: break-all; }
+  </style>
+  <script>
+    // buttons.js の press() が参照する関数（設定欄では呼ばれないのでダミー）
+    function callService() {}
+    function stateOf() {}
+  </script>
+  <script src="buttons.js"></script>
+</head>
+<body>
+  <label for="key">ボタン</label>
+  <select id="key"></select>
+  <div id="info"></div>
+  <script>
+    const CAT_NAME = { light: "照明", pc: "PC", plant: "植物", fan: "ファン", plug: "プラグ", lock: "鍵・玄関",
+                       display: "LEDパネル", alloff: "全照明・全オフ" };
+    const sel = document.getElementById("key"), info = document.getElementById("info");
+    let ws = null, uuid = null, action = null, current = "";
+
+    function build() {
+      sel.innerHTML = '<option value="">（選んでください）</option>';
+      const groups = {};
+      for (const [k, b] of Object.entries(BUTTONS)) (groups[b.cat] = groups[b.cat] || []).push([k, b]);
+      for (const [cat, list] of Object.entries(groups)) {
+        const og = document.createElement("optgroup");
+        og.label = CAT_NAME[cat] || cat;
+        for (const [k, b] of list) {
+          const o = document.createElement("option");
+          o.value = k; o.textContent = b.name;
+          og.appendChild(o);
+        }
+        sel.appendChild(og);
+      }
+      if (current && !BUTTONS[current]) {  // buttons.js から消えた key
+        const o = document.createElement("option");
+        o.value = current; o.textContent = "未定義: " + current;
+        sel.appendChild(o);
+      }
+      sel.value = current;
+      showInfo();
+    }
+
+    function showInfo() {
+      const b = BUTTONS[sel.value];
+      info.textContent = b ? `${b.entity}　（key: ${sel.value}${b.confirm ? "、2回押しで実行" : ""}）` : "";
+    }
+
+    sel.onchange = () => {
+      current = sel.value;
+      showInfo();
+      if (!ws) return;
+      ws.send(JSON.stringify({ event: "setSettings", context: uuid, payload: { key: current } }));
+      ws.send(JSON.stringify({ event: "sendToPlugin", action, context: uuid, payload: { key: current } }));
+    };
+
+    // Stream Dock（Stream Deck 互換）が呼ぶ
+    function connectElgatoStreamDeckSocket(port, inUUID, registerEvent, inInfo, inActionInfo) {
+      uuid = inUUID;
+      try {
+        const ai = typeof inActionInfo === "string" ? JSON.parse(inActionInfo) : inActionInfo;
+        action = ai.action;
+        current = (ai.payload && ai.payload.settings && ai.payload.settings.key) || "";
+      } catch (e) {}
+      build();
+      ws = new WebSocket("ws://127.0.0.1:" + port);
+      ws.onopen = () => ws.send(JSON.stringify({ event: registerEvent, uuid }));
+      ws.onmessage = (ev) => {
+        const m = JSON.parse(ev.data);
+        if (m.event === "didReceiveSettings" && m.payload && m.payload.settings) {
+          current = m.payload.settings.key || "";
+          build();
+        }
+      };
+    }
+    build();
+  </script>
+</body>
+</html>

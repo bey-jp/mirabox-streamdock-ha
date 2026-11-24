@@ -1,0 +1,8 @@
+// Home Assistant の接続先とトークン。
+// このファイルをコピーして「config.js」という名前にし、2か所を書き換えてください。
+window.HA_CONFIG = {
+  // HA の IP アドレスに置き換える（例 192.168.1.10）。https で使っている場合は ws:// を wss:// に
+  url: "ws://192.168.1.10:8123/api/websocket",
+  // PASTE_TOKEN_HERE を HA の「長期アクセストークン」に置き換える（プロフィール → セキュリティ → 長期アクセストークン → 作成）
+  token: "PASTE_TOKEN_HERE",
+};
